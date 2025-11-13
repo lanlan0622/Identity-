@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "识别主人身份，拦截昵称伪造",
   "author": "lanlan0622",
-  "repo": "lanlan0622/Identity-",
+  "repo": "https://github.com/lanlan0622/Identity-.git",
   "homepage": "https://github.com/lanlan0622/Identity-#readme",
   "documentation": "https://github.com/lanlan0622/Identity-#readme",
   "main": "index.js",
