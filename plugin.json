@@ -1,0 +1,11 @@
+{
+  "name": "owner-verify",
+  "version": "1.0.0",
+  "description": "识别主人身份，拦截昵称伪造",
+  "author": "lanlan0622",
+  "repo": "lanlan0622/Identity-",
+  "homepage": "https://github.com/lanlan0622/Identity-#readme",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {}
+}
