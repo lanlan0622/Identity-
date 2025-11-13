@@ -7,67 +7,63 @@ import astrbot.api.message_components as Comp
 from astrbot.core.message.components import BaseMessageComponent
 
 @register(
-    "github_identity_auth",
+    "astrbot_plugin_github_auth",
     "lanlan0622",
-    "GitHub身份认证插件，支持验证用户GitHub账号与QQ绑定关系",
+    "GitHub身份认证插件，支持QQ绑定GitHub账号",
     "1.0.0",
     "https://github.com/lanlan0622/Identity-.git"
 )
-class GitHubIdentityAuthPlugin(Star):
+class GitHubAuthPlugin(Star):
     def __init__(self, context: Context, config):
-        print('GitHub身份认证插件加载成功')
         self.config = config
         self.auth_pattern = re.compile(r"^(!|\/)github-auth\s+(\S+)$", re.IGNORECASE)
-        self.admin_qq = "2869707290"  # 修复：星际机器人的At组件需要字符串类型QQ
+        self.admin_qq = 2869707290  # 改这里：去掉引号，用整数类型
         super().__init__(context)
 
     @filter.on_decorating_result()
-    async def handle_auth_request(self, event: AstrMessageEvent):
+    async def handle_auth(self, event: AstrMessageEvent):
         result = event.get_result()
         msg_chain = result.chain
-        new_chain: list[BaseMessageComponent] = []
-        current_user_qq = str(event.user_id)  # 统一转为字符串避免类型问题
+        new_chain = []
+        current_user_qq = event.user_id  # 改这里：不用转字符串，保持整数
 
         msg_text = ""
-        for component in msg_chain:
-            if component.type == 'Plain':
-                msg_text += component.text
-            new_chain.append(component)
+        for comp in msg_chain:
+            if comp.type == "Plain":
+                msg_text += comp.text
+            new_chain.append(comp)
 
-        auth_match = self.auth_pattern.match(msg_text.strip())
-        if not auth_match:
+        match = self.auth_pattern.match(msg_text.strip())
+        if not match:
             result.chain = new_chain
             return
 
-        github_username = auth_match.group(2)
-        is_valid = self._verify_github_user(github_username)
-        if not is_valid:
-            new_chain.append(Comp.Plain(text=f"\n❌  GitHub用户名「{github_username}」不存在或无法访问"))
+        username = match.group(2)
+        if not self._check_github_user(username):
+            new_chain.append(Comp.Plain(text=f"\n❌ GitHub用户「{username}」不存在"))
             result.chain = new_chain
             return
 
-        auth_result = (
-            f"\n✅  身份认证请求已受理\n"
-            f"👤  申请QQ：{current_user_qq}\n"
-            f"🌐  绑定GitHub：{github_username}\n"
-            f"🔗  仓库地址：https://github.com/{github_username}\n"
-            f"\n管理员（@2869707290）将核实绑定关系~"
+        reply = (
+            f"\n✅ 认证请求已提交\n"
+            f"QQ：{current_user_qq}\n"
+            f"GitHub：{username}\n"
+            f"@管理员({self.admin_qq}) 请审核"
         )
-        new_chain.append(Comp.Plain(text=auth_result))
-        
+        new_chain.append(Comp.Plain(text=reply))
         if not event.is_private_chat():
-            new_chain.append(Comp.At(qq=self.admin_qq))  # 现在QQ是字符串类型，匹配组件要求
+            new_chain.append(Comp.At(qq=self.admin_qq))  # 这里现在是整数，匹配要求
 
         result.chain = new_chain
 
-    def _verify_github_user(self, username: str) -> bool:
+    def _check_github_user(self, username: str) -> bool:
         try:
-            response = requests.get(
+            resp = requests.get(
                 f"https://api.github.com/users/{username}",
                 timeout=5,
-                headers={"Accept": "application/vnd.github.v3+json"}
+                headers={"User-Agent": "AstrBot-Plugin"}
             )
-            return response.status_code == 200
+            return resp.status_code == 200
         except Exception as e:
-            logger.error(f"GitHub用户验证失败：{str(e)}")
+            logger.error(f"GitHub验证失败: {e}")
             return False
