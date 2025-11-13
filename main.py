@@ -1,7 +1,6 @@
 import re
 import requests
 from astrbot.api.event import filter, AstrMessageEvent
-from astrbot.api.provider import ProviderRequest
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 import astrbot.api.message_components as Comp
@@ -19,16 +18,15 @@ class GitHubIdentityAuthPlugin(Star):
         print('GitHub身份认证插件加载成功')
         self.config = config
         self.auth_pattern = re.compile(r"^(!|\/)github-auth\s+(\S+)$", re.IGNORECASE)
-        self.admin_qq = 2869707290
+        self.admin_qq = "2869707290"  # 修复：星际机器人的At组件需要字符串类型QQ
         super().__init__(context)
 
     @filter.on_decorating_result()
     async def handle_auth_request(self, event: AstrMessageEvent):
-        print('触发GitHub身份认证处理')
         result = event.get_result()
         msg_chain = result.chain
         new_chain: list[BaseMessageComponent] = []
-        current_user_qq = event.user_id
+        current_user_qq = str(event.user_id)  # 统一转为字符串避免类型问题
 
         msg_text = ""
         for component in msg_chain:
@@ -58,7 +56,7 @@ class GitHubIdentityAuthPlugin(Star):
         new_chain.append(Comp.Plain(text=auth_result))
         
         if not event.is_private_chat():
-            new_chain.append(Comp.At(qq=self.admin_qq))
+            new_chain.append(Comp.At(qq=self.admin_qq))  # 现在QQ是字符串类型，匹配组件要求
 
         result.chain = new_chain
 
