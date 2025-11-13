@@ -5,6 +5,7 @@
   "author": "lanlan0622",
   "repo": "lanlan0622/Identity-",
   "homepage": "https://github.com/lanlan0622/Identity-#readme",
+  "documentation": "https://github.com/lanlan0622/Identity-#readme",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {}
