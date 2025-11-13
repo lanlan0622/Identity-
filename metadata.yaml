@@ -1,0 +1,5 @@
+name: github_identity_auth
+desc: GitHub身份认证插件，支持验证用户GitHub账号与QQ绑定关系，需管理员审核
+version: v1.0
+author: lanlan0622
+repo: https://github.com/lanlan0622/Identity-.git
